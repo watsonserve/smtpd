@@ -2,27 +2,22 @@
 smtp server
 
 
-# imapd
-INTERNET MESSAGE ACCESS PROTOCOL - VERSION 4rev1 server
-
-[RFC3501](http://www.faqs.org/rfcs/rfc3501.html)
+使用者需实现`SmtpServerConfigure`接口
 ```
-typedef enum flags
-{
-    Seen = 1,
-    Answered = 2,
-    Flagged = 4,
-    Deleted = 8,
-    Draft = 16,
-    Recent = 32
+type SmtpServerConfigure interface {
+    GetConfig() *smtpd.ServerConfig
+    func (this *SmtpConf) Auth(username string, password string) string
+    func TakeOff(email *smtpd.Mail)
 }
 ```
-## 基础能力依赖
-* 7层有状态代理：the IMAP client will keep a long TCP connect with server. So the server side need a proxy layer to handle socket connect from client and send real request with session_id to server
-* 缓存状态机：客户端可订阅邮箱状态
-* 语法分析器：IMAP协议的命令使用类似SQL的结构化查询语法
-* 树形存储：IMAP协议要求可以建立目录，且目录下可以有子目录，所以需要类似LDAP或NFS的目录设计
 
-client * n => proxy * 1
-proxy * n  => server * 1
-由于server上有事件发生时不知道对应的客户端在哪个proxy server上，所以应该由proxy去注册并正在客户端离开时清理资源
+准备妥当后只需构建一个smtpd实例并监听即可
+```
+smtpServer := smtpd.New(&SmtpConf {})
+
+ln, err := smtpd.Socket(":10025")
+if nil != err {
+    log.Println(err)
+}
+smtpServer.Listen(ln)
+```
