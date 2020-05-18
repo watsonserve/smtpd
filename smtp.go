@@ -10,7 +10,7 @@ import (
 
 // helo命令
 func helo(ctx *smtp_context_t) {
-	ctx.Module = MOD_COMMAND
+	ctx.Module = mod_COMMAND
 	addr := ctx.Address
 	name := ctx.Msg[5:]
 
@@ -19,7 +19,7 @@ func helo(ctx *smtp_context_t) {
 
 // ehlo命令
 func ehlo(ctx *smtp_context_t) {
-	ctx.Module = MOD_COMMAND
+	ctx.Module = mod_COMMAND
 	addr := ctx.Address
 	name := ctx.Msg[5:]
 	msg := fmt.Sprintf(
@@ -119,7 +119,7 @@ func rcpt(ctx *smtp_context_t) {
 //
 func data(ctx *smtp_context_t) {
 	format := "from %s ([%s]) by %s over TLS secured channel with %s(%s)\r\n\t%d"
-	ctx.Module = MOD_HEAD
+	ctx.Module = mod_HEAD
 	config := ctx.conf
 	ele := &KV {
 		Name:  "Received",

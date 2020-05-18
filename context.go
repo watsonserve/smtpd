@@ -8,9 +8,9 @@ import (
 )
 
 const (
-    MOD_COMMAND = 1
-    MOD_HEAD = 2
-    MOD_BODY = 4
+    mod_COMMAND = 1
+    mod_HEAD = 2
+    mod_BODY = 4
 )
 
 type smtp_context_t struct {
@@ -33,7 +33,7 @@ func initSmtpContext(sock net.Conn, config SmtpServerConfigure) *smtp_context_t 
         Address: sock.RemoteAddr().String(),
         handlers: config,
         conf: config.GetConfig(),
-        Module: MOD_COMMAND,
+        Module: mod_COMMAND,
         Login: false,
         re: regexp.MustCompile("<(.+)>"),
         Email: &Mail{},

@@ -4,7 +4,6 @@ package smtpd
 import (
 	"bufio"
 	"container/list"
-    "crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -24,81 +23,30 @@ type Mail struct {
     MailContent string
 }
 
+// 配置
 type ServerConfig struct {
 	Domain  string
-	Ip      string
+	Ip      string // 服务器的IP
 	Name    string
 	Type    string
 	Version string
 }
 
+// 接口集合
 type SmtpServerConfigure interface {
 	GetConfig() *ServerConfig
 	Auth(username string, password string) string
 	TakeOff(email *Mail)
 }
 
-type Smtpd struct {
+type smtpd_t struct {
 	config SmtpServerConfigure
 	dict   map[string]func(*smtp_context_t)
 }
 
-func TLSSocket(port string, crt string, key string) (net.Listener, error) {
-    cert, err := tls.LoadX509KeyPair(crt, key)
-    if nil != err {
-        return nil, err
-    }
-    ln, err := tls.Listen("tcp", port, &tls.Config {
-        Certificates: []tls.Certificate{cert},
-        CipherSuites: []uint16 {
-          tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-          tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-          tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-          tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-          tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-        },
-        PreferServerCipherSuites: true,
-    })
-    if nil == err {
-        defer ln.Close()
-    }
-    return ln, err
-}
-
-func Socket(port string) (net.Listener, error) {
-    ln, err := net.Listen("tcp", port)
-    if nil == err {
-        defer ln.Close()
-    }
-    return ln, err
-}
-
-func New(config SmtpServerConfigure) *Smtpd {
-	if nil == config {
-		return nil
-	}
-	return &Smtpd {
-		config: config,
-		dict: map[string]func(*smtp_context_t) {
-			"HELO": helo,
-			"EHLO": ehlo,
-			"AUTH": auth,
-			"QUIT": quit,
-			"XCLIENT": xclient,
-			"STARTTLS": starttls,
-			"HELP": help,
-			"NOOP": noop,
-			"RSET": rset,
-			"MAIL": mail,
-			"RCPT": rcpt,
-			"DATA": data,
-		},
-	}
-}
-
-func (this *Smtpd) task(conn net.Conn) {
+func task(self *smtpd_t, conn net.Conn) {
 	scanner := bufio.NewScanner(conn)
-	ctx := initSmtpContext(conn, this.config)
+	ctx := initSmtpContext(conn, self.config)
 	ctx.hola()
 
 	for scanner.Scan() {
@@ -111,33 +59,20 @@ func (this *Smtpd) task(conn net.Conn) {
 		msg := scanner.Text()
 		ctx.Msg = msg
 		switch ctx.Module {
-		case MOD_COMMAND:
-			err = commandHash(this, ctx)
+		case mod_COMMAND:
+			err = commandHash(self, ctx)
 			if nil != err {
 				log.Println("Unknow Cmd: ", err)
 			}
-		case MOD_HEAD:
+		case mod_HEAD:
 			dataHead(ctx)
-		case MOD_BODY:
+		case mod_BODY:
 			dataBody(ctx)
 		}
 	}
 }
 
-// 这里使用的是每个链接启动一个新的go程的模型，高并发的话，性能取决于go语言的协程能力
-func (this *Smtpd) Listen(ln net.Listener) {
-    for {
-        conn, err := ln.Accept()
-        if nil != err {
-            log.Println("a connect exception")
-            continue
-        }
-        defer conn.Close()
-        go this.task(conn)
-    }
-}
-
-func commandHash(this *Smtpd, ctx *smtp_context_t) error {
+func commandHash(this *smtpd_t, ctx *smtp_context_t) error {
 	var key string
 	// 截取第一个单词
 	_, err := fmt.Sscanf(ctx.Msg, "%s", &key)
@@ -157,7 +92,7 @@ func commandHash(this *Smtpd, ctx *smtp_context_t) error {
 
 func dataHead(ctx *smtp_context_t) {
 	if "" == ctx.Msg {
-		ctx.Module = MOD_BODY
+		ctx.Module = mod_BODY
 	} else if ' ' == ctx.Msg[0] || '\t' == ctx.Msg[0] {
 		ctx.Email.Head[len(ctx.Email.Head)-1].Value += "\r\n" + ctx.Msg
 	} else {
@@ -172,10 +107,42 @@ func dataHead(ctx *smtp_context_t) {
 
 func dataBody(ctx *smtp_context_t) {
 	if "." == ctx.Msg {
-		ctx.Module = MOD_COMMAND
+		ctx.Module = mod_COMMAND
 		ctx.Send("250 2.6.0 Message received\r\n")
 		ctx.takeOff()
 		return
 	}
 	ctx.Email.MailContent += ctx.Msg + "\r\n"
+}
+
+func Service(ln net.Listener, config SmtpServerConfigure) {
+	if nil == config {
+		return
+	}
+	that := &smtpd_t {
+		config: config,
+		dict: map[string]func(*smtp_context_t) {
+			"HELO": helo,
+			"EHLO": ehlo,
+			"AUTH": auth,
+			"QUIT": quit,
+			"XCLIENT": xclient,
+			"STARTTLS": starttls,
+			"HELP": help,
+			"NOOP": noop,
+			"RSET": rset,
+			"MAIL": mail,
+			"RCPT": rcpt,
+			"DATA": data,
+		},
+	}
+    for {
+        conn, err := ln.Accept()
+        if nil != err {
+            log.Println("a connect exception")
+            continue
+        }
+        defer conn.Close()
+        go task(that, conn)
+    }
 }
