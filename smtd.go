@@ -12,15 +12,15 @@ import (
 )
 
 type KV struct {
-    Name string
-    Value string
+	Name  string
+	Value string
 }
 
 type Mail struct {
-    Sender string
-    Recver list.List
-    Head []KV
-    MailContent string
+	Sender      string
+	Recver      list.List
+	Head        []KV
+	MailContent string
 }
 
 // 配置
@@ -45,6 +45,7 @@ type smtpd_t struct {
 }
 
 func task(self *smtpd_t, conn net.Conn) {
+	defer conn.Close()
 	scanner := bufio.NewScanner(conn)
 	ctx := initSmtpContext(conn, self.config)
 	ctx.hola()
@@ -97,7 +98,7 @@ func dataHead(ctx *smtp_context_t) {
 		ctx.Email.Head[len(ctx.Email.Head)-1].Value += "\r\n" + ctx.Msg
 	} else {
 		attr := strings.Split(ctx.Msg, ": ")
-		ele := &KV {
+		ele := &KV{
 			Name:  attr[0],
 			Value: attr[1],
 		}
@@ -119,30 +120,30 @@ func Service(ln net.Listener, config SmtpServerConfigure) {
 	if nil == config {
 		return
 	}
-	that := &smtpd_t {
+	that := &smtpd_t{
 		config: config,
-		dict: map[string]func(*smtp_context_t) {
-			"HELO": helo,
-			"EHLO": ehlo,
-			"AUTH": auth,
-			"QUIT": quit,
-			"XCLIENT": xclient,
+		dict: map[string]func(*smtp_context_t){
+			"HELO":     helo,
+			"EHLO":     ehlo,
+			"AUTH":     auth,
+			"QUIT":     quit,
+			"XCLIENT":  xclient,
 			"STARTTLS": starttls,
-			"HELP": help,
-			"NOOP": noop,
-			"RSET": rset,
-			"MAIL": mail,
-			"RCPT": rcpt,
-			"DATA": data,
+			"HELP":     help,
+			"NOOP":     noop,
+			"RSET":     rset,
+			"MAIL":     mail,
+			"RCPT":     rcpt,
+			"DATA":     data,
 		},
 	}
-    for {
-        conn, err := ln.Accept()
-        if nil != err {
-            log.Println("a connect exception")
-            continue
-        }
-        defer conn.Close()
-        go task(that, conn)
-    }
+	for {
+		conn, err := ln.Accept()
+		if nil != err {
+			log.Println("a connect exception")
+			continue
+		}
+
+		go task(that, conn)
+	}
 }

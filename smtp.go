@@ -59,42 +59,35 @@ func auth(ctx *smtp_context_t) {
 	ctx.Send(buf)
 }
 
-//
 func quit(ctx *smtp_context_t) {
 	ctx.End("221 2.0.0 " + ctx.conf.Domain + " Service closing transmission channel\r\n")
 }
 
-//
 func xclient(ctx *smtp_context_t) {
 	log.Println("auth by agency")
 	ctx.Login = true
 	ctx.hola()
 }
 
-//
 func starttls(ctx *smtp_context_t) {
 	ctx.Send("502 5.3.3 STARTTLS is not supported\r\n")
 	log.Println("startTTS")
 }
 
-//
 func help(ctx *smtp_context_t) {
 	ctx.Send("502 5.3.3 HELP is not supported\r\n")
 }
 
-//
 func noop(ctx *smtp_context_t) {
 	ctx.Send("250 2.0.0 OK\r\n")
 	log.Println("noop")
 }
 
-//
 func rset(ctx *smtp_context_t) {
 	ctx.Send("250 2.0.0 OK\r\n")
 	log.Println("rset")
 }
 
-//
 func mail(ctx *smtp_context_t) {
 	ctx.Email.Sender = ctx.re.FindStringSubmatch(ctx.Msg)[1]
 	clientDomain := strings.Split(ctx.Email.Sender, "@")[1]
@@ -105,7 +98,6 @@ func mail(ctx *smtp_context_t) {
 	ctx.Send("530 5.7.1 Authentication Required\r\n")
 }
 
-//
 func rcpt(ctx *smtp_context_t) {
 	recver := ctx.re.FindStringSubmatch(ctx.Msg)[1]
 	if strings.Split(recver, "@")[1] != ctx.conf.Domain && !ctx.Login { // 非登录用户 to 外域
@@ -116,12 +108,11 @@ func rcpt(ctx *smtp_context_t) {
 	ctx.Send("250 2.1.5 Recipient <" + recver + "> OK\r\n")
 }
 
-//
 func data(ctx *smtp_context_t) {
 	format := "from %s ([%s]) by %s over TLS secured channel with %s(%s)\r\n\t%d"
 	ctx.Module = mod_HEAD
 	config := ctx.conf
-	ele := &KV {
+	ele := &KV{
 		Name:  "Received",
 		Value: fmt.Sprintf(format, config.Domain, config.Ip, config.Domain, config.Name, config.Version, time.Now().Unix()),
 	}
