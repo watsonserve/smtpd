@@ -2,6 +2,8 @@ module github.com/watsonserve/smtpd
 
 go 1.21.3
 
+require github.com/watsonserve/maild v0.0.1
+
 require github.com/watsonserve/goutils v0.1.13
 
 require (

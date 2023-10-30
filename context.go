@@ -5,6 +5,8 @@ import (
 	"net"
 	"regexp"
 	"time"
+
+	"github.com/watsonserve/maild"
 )
 
 const (
@@ -17,11 +19,11 @@ type smtp_context_t struct {
 	sock     net.Conn
 	Address  string
 	handlers SmtpServerConfigure
-	conf     *ServerConfig
+	conf     *maild.ServerConfig
 	Module   int
 	Login    bool
 	re       *regexp.Regexp
-	Email    *Mail
+	Email    *maild.Mail
 	// 其他
 	Msg  string
 	User string
@@ -36,7 +38,7 @@ func initSmtpContext(sock net.Conn, config SmtpServerConfigure) *smtp_context_t 
 		Module:   mod_COMMAND,
 		Login:    false,
 		re:       regexp.MustCompile("<(.+)>"),
-		Email:    &Mail{},
+		Email:    &maild.Mail{},
 	}
 
 	return scxt

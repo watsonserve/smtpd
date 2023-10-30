@@ -6,6 +6,8 @@ import (
 	"log"
 	"strings"
 	"time"
+
+	"github.com/watsonserve/maild"
 )
 
 // helo命令
@@ -112,7 +114,7 @@ func data(ctx *smtp_context_t) {
 	format := "from %s ([%s]) by %s over TLS secured channel with %s(%s)\r\n\t%d"
 	ctx.Module = mod_HEAD
 	config := ctx.conf
-	ele := &KV{
+	ele := &maild.KV{
 		Name:  "Received",
 		Value: fmt.Sprintf(format, config.Domain, config.Ip, config.Domain, config.Name, config.Version, time.Now().Unix()),
 	}

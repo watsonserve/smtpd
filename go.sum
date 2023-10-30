@@ -32,6 +32,8 @@ github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/watsonserve/goutils v0.1.13 h1:l6kSncz81JJnnIJ7Pkq3n2TEEuhrqej5JVS734woOPc=
 github.com/watsonserve/goutils v0.1.13/go.mod h1:UCuHnlSRGLqWAUu7nC4w6yAJMT8bRNPq35Irm6OEzBQ=
+github.com/watsonserve/maild v0.0.1 h1:V0l84ALbshS7Btjrqx7u7+tk/I4FSwuzFmEGAquroc4=
+github.com/watsonserve/maild v0.0.1/go.mod h1:7XewEYIUD6DQ+dwrQrQAk/KEXZX5x6vXk0J7CI4cq0s=
 go.uber.org/mock v0.3.0 h1:3mUxI1No2/60yUYax92Pt8eNOEecx2D3lcXZh2NEZJo=
 go.uber.org/mock v0.3.0/go.mod h1:a6FSlNadKUHUa9IP5Vyt1zh4fC7uAwxMutEAscFbkZc=
 golang.org/x/crypto v0.4.0 h1:UVQgzMY87xqpKNgb+kDsll2Igd33HszWHFLmpaRMq/8=

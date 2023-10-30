@@ -3,40 +3,21 @@ package smtpd
 
 import (
 	"bufio"
-	"container/list"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"strings"
+
+	"github.com/watsonserve/maild"
 )
 
-type KV struct {
-	Name  string
-	Value string
-}
-
-type Mail struct {
-	Sender      string
-	Recver      list.List
-	Head        []KV
-	MailContent string
-}
-
-// 配置
-type ServerConfig struct {
-	Domain  string
-	Ip      string // 服务器的IP
-	Name    string
-	Type    string
-	Version string
-}
 
 // 接口集合
 type SmtpServerConfigure interface {
-	GetConfig() *ServerConfig
+	GetConfig() *maild.ServerConfig
 	Auth(username string, password string) string
-	TakeOff(email *Mail)
+	TakeOff(email *maild.Mail)
 }
 
 type smtpd_t struct {
@@ -98,7 +79,7 @@ func dataHead(ctx *smtp_context_t) {
 		ctx.Email.Head[len(ctx.Email.Head)-1].Value += "\r\n" + ctx.Msg
 	} else {
 		attr := strings.Split(ctx.Msg, ": ")
-		ele := &KV{
+		ele := &maild.KV{
 			Name:  attr[0],
 			Value: attr[1],
 		}

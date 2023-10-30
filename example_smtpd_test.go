@@ -6,12 +6,13 @@ import (
 
 	"github.com/watsonserve/goutils"
 	"github.com/watsonserve/smtpd"
+	"github.com/watsonserve/maild"
 )
 
 type SmtpConf struct{}
 
-func (sc *SmtpConf) GetConfig() *smtpd.ServerConfig {
-	return &smtpd.ServerConfig{
+func (sc *SmtpConf) GetConfig() *maild.ServerConfig {
+	return &maild.ServerConfig{
 		Domain:  "watsonserve.com",
 		Ip:      "127.0.0.1",
 		Type:    "SMTP",
